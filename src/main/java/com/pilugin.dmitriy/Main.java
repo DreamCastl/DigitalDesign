@@ -8,7 +8,7 @@ public class Main {
     }
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws DatesToCronConvertException {
         ConverToCron ConverToCronObj = new ConverToCron();
         ArrayList<String> strData = new ArrayList<>() ;
         strData.add("2022-01-26T08:30:00");
