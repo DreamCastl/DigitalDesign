@@ -5,7 +5,7 @@ public interface DatesToCronConverter {
 
 
     default String convert(String[] str){ // не факт что string
-        String Rezult = "На входе список дат а на выходе вот эта строка";
+        String Rezult = "На входе списоasdasdsadк дат а на выходе вот эта строка";
         // А вот тут происхдит магия
         return Rezult;
     }
