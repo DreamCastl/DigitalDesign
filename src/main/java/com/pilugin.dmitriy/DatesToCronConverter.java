@@ -26,7 +26,7 @@ public interface DatesToCronConverter {
         //need sort and parse ArrayList
 
         ArrayList<ArrayList<String>> AnaliticArray = SortAndParse(str);
-        String Rezult = ConvertTationToCron(AnaliticArray);
+        String Rezult = ConvertationToCron(AnaliticArray);
         return Rezult;
     }
 
@@ -61,21 +61,21 @@ public interface DatesToCronConverter {
         return rez;
     }
 
-    static String ConvertTationToCron(ArrayList<ArrayList<String>> AnaliticArray) throws DatesToCronConvertException {
+    static String ConvertationToCron(ArrayList<ArrayList<String>> AnaliticArray) throws DatesToCronConvertException {
 // Значение по умолчанию каждую секунду
         String result =
-                second(AnaliticArray)+ " " +
-                minute(AnaliticArray) + " " +
-                hour(AnaliticArray) + " " +
-                day(AnaliticArray) + " " +
-                month(AnaliticArray) + " " +
-                day_of_the_week(AnaliticArray);
+                collapse(AnaliticArray,5)+ " " +
+                collapse(AnaliticArray,4) + " " +
+                collapse(AnaliticArray,3) + " " +
+                collapse(AnaliticArray,2) + " " +
+                collapse(AnaliticArray,1) + " " +
+                collapse(AnaliticArray,0);
         return result ;
     }
 
-    static String second(ArrayList<ArrayList<String>> AnaliticArray) throws DatesToCronConvertException {
+    static String collapse(ArrayList<ArrayList<String>> AnaliticArray,int number) throws DatesToCronConvertException {
     String rez = "*";
-    ArrayList ArrayData = СolumnToLine(AnaliticArray,5);
+    ArrayList ArrayData = СolumnToLine(AnaliticArray,number);
 
     // Чистим дубли потому что в переоидичности они нам не нужны
     HashSet set = new HashSet(ArrayData);
@@ -95,15 +95,23 @@ public interface DatesToCronConverter {
         }
         else
         {
-            // проверим на инкрементность, если нет, то перечислением
-            rez = "*";
+            // проверим на инкрементность, если нет, то перечислением TODO усложнить проверку
+            if ((Integer)ArrayData.get(0) + 1 == (Integer) ArrayData.get(1) ) {
+                rez = ArrayData.get(0) + "-" + ArrayData.get(ArrayData.size()-1);
+            }
+            else {
+                for (Object element : ArrayData) {
+                    rez = rez + element +",";
+                }
+                rez = rez.substring(0,rez.length()-1);
+
+            }
+
         }
-
-        // ArrayData
-
-    return "*";
+    return rez;
     }
 
+    /*
     static String minute(ArrayList<ArrayList<String>> AnaliticArray) throws DatesToCronConvertException {
         String rez = "*";
 
@@ -130,7 +138,7 @@ public interface DatesToCronConverter {
 
         return "*";
     }
-
+*/
     static ArrayList СolumnToLine(ArrayList<ArrayList<String>> analiticArray, int i) {
         ArrayList Rezult = new ArrayList();
 
