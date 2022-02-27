@@ -1,10 +1,10 @@
 package com.pilugin.dmitriy;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
+import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.util.*;
 
-public class ConvertToCron implements DatesToCronConverter{
+public class ConvertToCron implements DatesToCronConverter {
     @Override
     public String convert(ArrayList str) throws DatesToCronConvertException {
         // не факт что string
@@ -25,37 +25,11 @@ public class ConvertToCron implements DatesToCronConverter{
 
         ArrayList<ArrayList<String>> AnaliticArray = SortAndParse(str);
 
-        ArrayList<String> Rezult = new ArrayList<>();
 
-        Rezult.add(AddTime(AnaliticArray,1));
-        Rezult.add(AddTime(AnaliticArray,2));
-        Rezult.add(AddTime(AnaliticArray,3));
-        Rezult.add(AddTime(AnaliticArray,4));
-        Rezult.add(AddTime(AnaliticArray,5));
-        Rezult.add(AddDayOftheWeek(AnaliticArray));
-      //  Rezult = ConvertationToCron(AnaliticArray); // не дождался ответа на письмо. Эта ветка по подбору из списка дат - не используется.
+        String Rezult = ConvertationToCron(AnaliticArray); // не дождался ответа на письмо. Эта ветка по подбору из списка дат - не используется.
 
-        return String.join(" ", Rezult);
+        return Rezult;
     }
-
-    private String AddTime(ArrayList<ArrayList<String>> analiticArray, int i) {
-        return "*";
-    }
-
-    private String AddDayOftheWeek(ArrayList<ArrayList<String>> analiticArray) {
-        return "*";
-    }
-
-
-
-
-
-
-
-
-
-
-
 
 
     static ArrayList<ArrayList<String>> SortAndParse(ArrayList<String> str) throws DatesToCronConvertException {
@@ -91,9 +65,40 @@ public class ConvertToCron implements DatesToCronConverter{
         String hour = collapse(AnaliticArray, 3);
         String day = collapse(AnaliticArray, 2);
         String month = collapse(AnaliticArray, 1);
-        String dayweek = "*"; //    collapse(AnaliticArray,0);
+        String dayweek = DayOfWeeks(AnaliticArray); //    collapse(AnaliticArray,0);
         String result = second + " " + minute + " " + hour + " " + day + " " + month + " " + dayweek;
         return result;
+    }
+
+    private static String DayOfWeeks(ArrayList<ArrayList<String>> analiticArray) {
+        String rez = "*";
+        String date = "dd.MM.yyyy";
+        ArrayList ArrayDaysWeek = new ArrayList<Integer>() ;
+        for(ArrayList Line : analiticArray  )
+        {
+            // Переводим строку в дату
+            date = Line.get(2) +"."+ Line.get(1)+"."+ Line.get(0);
+            SimpleDateFormat format = new SimpleDateFormat( "dd.MM.yyyy" );
+            Date dayWeek = null;
+            try {
+                dayWeek = format.parse(date);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            ArrayDaysWeek.add(dayWeek.getDay());
+        }
+
+        // Чистим дубли потому что в переоидичности они нам не нужны
+        HashSet set = new HashSet(ArrayDaysWeek);
+// Очищаем коллекцию списков
+        ArrayDaysWeek.clear();
+// Повторно добавляем дедублированные элементы в список
+        ArrayDaysWeek.addAll(set);
+
+        if (ArrayDaysWeek.size() == 1) {
+            rez = "d#"+ ArrayDaysWeek.get(0).toString();
+            }
+        return rez;
     }
 
     static String collapse(ArrayList<ArrayList<String>> AnaliticArray, int number) throws DatesToCronConvertException {
@@ -120,24 +125,25 @@ public class ConvertToCron implements DatesToCronConverter{
             if (Integer.valueOf((String) ArrayData.get(0)) + 1 == Integer.valueOf((String) ArrayData.get(1))) {
                 rez = ArrayData.get(0) + "-" + ArrayData.get(ArrayData.size() - 1);
             } else {
-                switch (number = 1) {
-                    case 1:
-                        minute(ArrayData);
-                        break;
-                    case 2:
-                        minute(ArrayData);
-                        break;
-                    default:
-                        break;
+                rez = minute(ArrayData);
+//                switch (number) {
+//                    case 1:
+//                        minute(ArrayData);
+//                        break;
+//                    case 2:
+//                        minute(ArrayData);
+//                        break;
+//                    default:
+//                        break;
+//
+                //               }
 
+                if (rez == "*" && ArrayData.size() != AnaliticArray.size()) {
+                    for (Object element : ArrayData) {
+                        rez = rez + element + ",";
+                    }
+                    rez = rez.substring(0, rez.length() - 1);
                 }
-
-
-                for (Object element : ArrayData) {
-                    rez = rez + element + ",";
-                }
-                rez = rez.substring(0, rez.length() - 1);
-
             }
 
         }
@@ -147,44 +153,22 @@ public class ConvertToCron implements DatesToCronConverter{
     }
 
     static String minute(ArrayList ArrayData) throws DatesToCronConvertException {
-
-        int divider = abs(Integer.valueOf((String) ArrayData.get(0)) - Integer.valueOf((String) ArrayData.get(1)));
         String rez = "*";
+        int divider = abs(Integer.valueOf((String) ArrayData.get(0)) - Integer.valueOf((String) ArrayData.get(1)));
 
+        rez = "*/" + Integer.toString(divider);
         for (Object element : ArrayData) {
 
             int remainder = Integer.valueOf((String) element) % divider;
 
             if (remainder != 0) {
+                rez = "*";
                 break;
             }
         }
-        return "*";
+        return rez;
     }
 
-    /*
-    static String hour(ArrayList<ArrayList<String>> AnaliticArray) throws DatesToCronConvertException {
-        String rez = "*";
-
-        return "*";
-    }
-
-    static String day(ArrayList<ArrayList<String>> AnaliticArray) throws DatesToCronConvertException {
-        String rez = "*";
-
-        return "*";
-    }
-    static String month(ArrayList<ArrayList<String>> AnaliticArray) throws DatesToCronConvertException {
-        String rez = "*";
-
-        return "*";
-    }
-    static String day_of_the_week(ArrayList<ArrayList<String>> AnaliticArray) throws DatesToCronConvertException {
-        String rez = "*";
-
-        return "*";
-    }
-*/
     static ArrayList СolumnToLine(ArrayList<ArrayList<String>> analiticArray, int i) {
         ArrayList Rezult = new ArrayList();
 
